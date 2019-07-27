@@ -93,7 +93,49 @@
 				<p>&nbsp No comments yet.</p>
 				{% endif %}
 			</div>
-			<a href="{{ url_for('book_comments') }}">View All Comments For Book</a>
+
+			<style>
+				.hidden{
+					display: none;
+				}
+			</style>
+
+			<script type="text/javascript">
+				function showHide(){
+					var hiddeninputs = document.getElementsByClassName("hidden");
+
+					for(var i =0; i != hiddeninputs.length; i++){
+						if(check_login()){
+							hiddeninputs[i].style.display = "article";
+						}
+						else{
+							hiddeninputs[i].style.display = "none";
+						}
+					}
+				}
+			</script>
+
+            <article>
+            <section>
+                <h3 >Add Rating</h3>
+            </section>
+            <x-star-rating value="" number="5" id="rating"></x-star-rating>
+            <script src="../static/js/StarRating.js"></script>
+
+            <section>
+                <h3>Add Comment</h3>
+                <form action="{{ url_for('add_comment_to_book', user_id=current_user.id, book_id=book.id) }}" method="post">
+                    <input type="hidden" id="ratingValue" name="ratingValue" value=""/>
+                    <textarea name="comment" placeholder="Enter your comment here..." value=""></textarea>
+					<br>
+					<input type="checkbox" name="anonymous" id="anonymous" />
+					<label for="chk">Submit as an anonymous user?</label>
+					<br>
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                </form>
+            </section>
+        	</article>
+
 		</div>
 	</div>
 </div>
@@ -119,6 +161,10 @@ var span = document.getElementsByClassName("close")[0];
 span.onclick = function() { 
   modal.style.display = "none";
 }
+
+rating.addEventListener('rate', () => {
+    $('#ratingValue').attr('value', rating.value);
+});
 </script>
 
 

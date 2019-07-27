@@ -1,5 +1,6 @@
 from settings import *
 from BookRatingsAndCommentsModel import *
+from BookModel import Book
 
 book_copies = db.Table('book_copies',
                        db.Column('user_id', db.Integer, db.ForeignKey('user.id')),
@@ -309,7 +310,13 @@ def delete_user_shipping(id):
 def book(id):
     book = Book.query.filter_by(id=id).first()
     author = Authors.query.filter_by(AuthorName=book.authorName).first()
-    return render_template('book.html', book=book, author=author)
+    comments = BookRatingsAndComments.query.filter_by(bookId=id).all()
+    return render_template('book.html', book=book, author=author, comments=comments)
+
+
+def get_average_rating(id):
+    book = Book.query.filter_by(id=id).first()
+    return get_average_rating_for_book(book)
 
 
 @app.route('/add_to_cart/<int:book_id>')
@@ -442,29 +449,15 @@ def new_comments(num):
     return sorted(comments, key=lambda bm: bm['date'], reverse=True)[:num]
 
 
-@app.route('/book_comments/', methods=['GET', 'POST'])
-def book_comments():
-    if request.method == "POST":
-        comments = request.form['comments']
-        store_comments(comments)
-        flash("Stored Comment '{}'".format(comments))
-        return redirect(url_for('book.html', new_comments(2)))
-    return render_template('star_rating.html')
-
-
-@app.route('/user_comments')
-def view_user_comments():
-    return render_template('user_comments.html')
-
 @app.route('/checkout')
 def checkout():
     user_id = current_user.id
     orders = Cart.query.filter_by(user_id=user_id).all()
     for order in orders:
         book_id = order.book_id
-        o = BookRatingsAndComments(userId=user_id,bookId=book_id)
+       # o = BookRatingsAndComments(userId=user_id,bookId=book_id)
         o2 = Orders(user_id=user_id,book_id=book_id)
-        db.session.add(o)
+       # db.session.add(o)
         db.session.add(o2)
         db.session.delete(order)
     db.session.commit()
@@ -476,6 +469,7 @@ def orders():
     user_id = current_user.id
     orders = Orders.query.filter_by(user_id=user_id).all()
     return render_template('orders.html',orders=orders)
+
 
 @app.route('/order_comment/<int:bookId>/',methods=["GET","POST"])
 def order_comment(bookId):
@@ -491,6 +485,22 @@ def order_comment(bookId):
             db.session.commit()
         return redirect(url_for('index'))
     return render_template('order_comment.html',book=book)
+
+
+@app.route('/add_book_comment/<int:book_id>', methods=['POST'])
+def add_comment_to_book(book_id):
+    user_id = current_user.id
+    if (request.form.get('ratingValue') == '') or (request.form.get('comment') == ''):
+        flash("The ratings and/or comments section cannot be left blank.", 'error')
+        return redirect(url_for('book', id=book_id))
+
+    add_rating_and_comment(user_id, book_id, int(request.form['ratingValue']), request.form['comment'],
+                           request.form.get('anonymous'))
+    if request.form.get('anonymous') == 'on':
+        flash("{} added a comment to this book".format('Anonymous'), 'success')
+    else:
+        flash("{} added a comment to this book".format(current_user), 'success')
+    return redirect(url_for('book', id=book_id))
 
 
 @app.errorhandler(404)
