@@ -27,36 +27,14 @@
 					</div>
 				</div>
 				<section class='rating-widget'>
-
-					<!-- Rating Stars Box -->
-					<div class='rating-stars text-left'>
-						<ul id='stars line-inline'>
-							<li class='star list-inline-item' title='Poor' data-value='1'>
-								<i class='fa fa-star fa-fw'></i>
-							</li>
-							<li class='star list-inline-item' title='Fair' data-value='2'>
-								<i class='fa fa-star fa-fw'></i>
-							</li>
-							<li class='star list-inline-item' title='Good' data-value='3'>
-								<i class='fa fa-star fa-fw'></i>
-							</li>
-							<li class='star list-inline-item' title='Excellent' data-value='4'>
-								<i class='fa fa-star fa-fw'></i>
-							</li>
-							<li class='star list-inline-item' title='WOW!!!' data-value='5'>
-								<i class='fa fa-star fa-fw'></i>
-							</li>
-						</ul>
-					</div>
-					<!--
-					<div class='success-box'>
-					<div class='clearfix'></div>
-						<img alt='tick image' width='32' src='data:image/svg+xml;utf8;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iaXNvLTg4NTktMSI/Pgo8IS0tIEdlbmVyYXRvcjogQWRvYmUgSWxsdXN0cmF0b3IgMTkuMC4wLCBTVkcgRXhwb3J0IFBsdWctSW4gLiBTVkcgVmVyc2lvbjogNi4wMCBCdWlsZCAwKSAgLS0+CjxzdmcgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB4bWxuczp4bGluaz0iaHR0cDovL3d3dy53My5vcmcvMTk5OS94bGluayIgdmVyc2lvbj0iMS4xIiBpZD0iTGF5ZXJfMSIgeD0iMHB4IiB5PSIwcHgiIHZpZXdCb3g9IjAgMCA0MjYuNjY3IDQyNi42NjciIHN0eWxlPSJlbmFibGUtYmFja2dyb3VuZDpuZXcgMCAwIDQyNi42NjcgNDI2LjY2NzsiIHhtbDpzcGFjZT0icHJlc2VydmUiIHdpZHRoPSI1MTJweCIgaGVpZ2h0PSI1MTJweCI+CjxwYXRoIHN0eWxlPSJmaWxsOiM2QUMyNTk7IiBkPSJNMjEzLjMzMywwQzk1LjUxOCwwLDAsOTUuNTE0LDAsMjEzLjMzM3M5NS41MTgsMjEzLjMzMywyMTMuMzMzLDIxMy4zMzMgIGMxMTcuODI4LDAsMjEzLjMzMy05NS41MTQsMjEzLjMzMy0yMTMuMzMzUzMzMS4xNTcsMCwyMTMuMzMzLDB6IE0xNzQuMTk5LDMyMi45MThsLTkzLjkzNS05My45MzFsMzEuMzA5LTMxLjMwOWw2Mi42MjYsNjIuNjIyICBsMTQwLjg5NC0xNDAuODk4bDMxLjMwOSwzMS4zMDlMMTc0LjE5OSwzMjIuOTE4eiIvPgo8Zz4KPC9nPgo8Zz4KPC9nPgo8Zz4KPC9nPgo8Zz4KPC9nPgo8Zz4KPC9nPgo8Zz4KPC9nPgo8Zz4KPC9nPgo8Zz4KPC9nPgo8Zz4KPC9nPgo8Zz4KPC9nPgo8Zz4KPC9nPgo8Zz4KPC9nPgo8Zz4KPC9nPgo8Zz4KPC9nPgo8Zz4KPC9nPgo8L3N2Zz4K'/>
-						<div class='text-message'></div>
-						<div class='clearfix'></div>
-					</div>
-					</section>
-					-->
+                    <div style="text-align: center;">
+                        <x-star-rating value="{{ average_rating }}" number="5" id="rated" disabled="true"></x-star-rating>
+                        {% if number_of_comments == 1 %}
+                            ({{ number_of_comments }} Rating)
+                        {% else %}
+                            ({{ number_of_comments }} Ratings)
+                        {% endif %}
+                    </div>
 
 					<ul class="list-group list-group-flush">
 						<li class="list-group-item text-center">${{ book.price }}</li>
@@ -85,6 +63,10 @@
                 <section>
                     <h3 >Comments</h3>
                 </section>
+				{% if comments and comments|length > 0 %}
+                {{ pagination.info }}
+                {{ pagination.links }}
+				{% endif %}
                 <section>
                     {% if comments and comments|length > 0 %}
                         {% for comment in comments %}
@@ -108,31 +90,22 @@
             </article>
 
 			<style>
-				.hidden{
-					display: none;
-				}
                 .commentSection {
                     margin-bottom: 25px;
+                }
+                .commentSection nav {
+                    background: white !important;
+                    margin-top: 10px;
+                    margin-left: -8px;
+                    margin-bottom: 5px;
+                }
+                .commentSection span[aria-hidden=true] {
+                    padding: 0 !important;
                 }
                 .actualComment {
                     margin-bottom: 10px;
                 }
 			</style>
-
-			<script type="text/javascript">
-				function showHide(){
-					var hiddeninputs = document.getElementsByClassName("hidden");
-
-					for(var i =0; i != hiddeninputs.length; i++){
-						if(check_login()){
-							hiddeninputs[i].style.display = "article";
-						}
-						else{
-							hiddeninputs[i].style.display = "none";
-						}
-					}
-				}
-			</script>
 
             {% if current_user.id and has_ordered %}
                 <article>
@@ -144,7 +117,7 @@
                         <h3>Add Comment</h3>
                         <form action="{{ url_for('add_comment_to_book', user_id=current_user.id, book_id=book.id) }}" method="post">
                             <input type="hidden" id="ratingValue" name="ratingValue" value=""/>
-                            <textarea name="comment" placeholder="Enter your comment here..." value=""></textarea>
+                            <textarea rows="6" cols="60" maxlength="500" name="comment" placeholder="Enter your comment here..." value=""></textarea>
                             <br>
                             <input type="checkbox" name="anonymous" id="anonymous" />
                             <label for="chk">Submit as an anonymous user?</label>

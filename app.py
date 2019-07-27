@@ -1,9 +1,14 @@
+from flask_paginate import get_page_parameter, Pagination, get_page_args
+
 from settings import *
 from BookRatingsAndCommentsModel import *
 from BookModel import Book
 
 from datetime import datetime
 from dateutil import tz
+
+PAGINATION_DISPLAY_MSG = '''Showing {record_name} <b>{start} - {end}</b> of <b>{total}</b>'''
+PAGINATION_PER_PAGE = 5
 
 
 def format_datetime(utc):
@@ -325,7 +330,16 @@ def delete_user_shipping(id):
 def book(id):
     book = Book.query.filter_by(id=id).first()
     author = Authors.query.filter_by(AuthorName=book.authorName).first()
+
     comments = BookRatingsAndComments.query.filter_by(bookId=id).order_by(BookRatingsAndComments.createdDate.desc()).all()
+
+    page, per_page, offset = get_page_args()
+
+    pagination = Pagination(page=page, total=len(comments), record_name='comment',
+                            per_page=PAGINATION_PER_PAGE,
+                            display_msg=PAGINATION_DISPLAY_MSG, bs_version=4)
+
+    paginated_comments = comments[((page-1)*PAGINATION_PER_PAGE):][:PAGINATION_PER_PAGE]
 
     users = User.query.all()
     user_map = {}
@@ -337,14 +351,22 @@ def book(id):
         order_count = Orders.query.filter_by(book_id=id,user_id=current_user.id).count()
 
     has_ordered = order_count > 0
+    average_rating = 0
+    total_rating = 0
     for comment in comments:
+        total_rating += comment.rating
+
         if comment.anonymous:
             comment.userId = -1
             comment.user = "Anonymous"
         else:
             comment.user = user_map[comment.userId]
 
-    return render_template('book.html', book=book, author=author, comments=comments, has_ordered=has_ordered)
+    if len(comments) > 0:
+        average_rating = total_rating/len(comments)
+
+    return render_template('book.html', book=book, author=author, comments=paginated_comments, has_ordered=has_ordered,
+                           pagination=pagination, average_rating=average_rating, number_of_comments=len(comments))
 
 
 @app.route('/add_to_cart/<int:book_id>')
@@ -468,9 +490,7 @@ def checkout():
     orders = Cart.query.filter_by(user_id=user_id).all()
     for order in orders:
         book_id = order.book_id
-       # o = BookRatingsAndComments(userId=user_id,bookId=book_id)
         o2 = Orders(user_id=user_id,book_id=book_id)
-       # db.session.add(o)
         db.session.add(o2)
         db.session.delete(order)
     db.session.commit()
@@ -508,6 +528,10 @@ def add_comment_to_book(book_id):
         flash("The ratings and/or comments section cannot be left blank.", 'error')
         return redirect(url_for('book', id=book_id))
 
+    if len(request.form.get('comment')) > 500:
+        flash("Your comments cannot exceed 500 characters.", 'error')
+        return redirect(url_for('book', id=book_id))
+
     add_rating_and_comment(user_id, book_id, int(request.form['ratingValue']), request.form['comment'],
                            request.form.get('anonymous'))
     if request.form.get('anonymous') == 'on':
@@ -525,8 +549,6 @@ def page_not_found(e):
 @app.errorhandler(500)
 def server_error(e):
     return render_template('500.html'), 500
-
-
 
 
 if __name__ == '__main__':
