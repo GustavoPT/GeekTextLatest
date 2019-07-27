@@ -43,7 +43,7 @@ class User(db.Model, UserMixin):
     user_cards = db.relationship('UserCard', backref='user')
     user_shippings = db.relationship('UserShipping', backref='user')
 
-    physical_address = db.Column(db.String(128))
+    # physical_address = db.Column(db.String(128))
 
     def __str__(self):
         return self.name
@@ -92,6 +92,15 @@ class Cart(db.Model):
 
 
 class Saveforlater(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    book_id = db.Column(db.Integer, db.ForeignKey('book.id'))
+
+    def __str__(self):
+        book = Book.query.get(self.book_id)
+        return f"{book.title}"
+
+class Orders(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     book_id = db.Column(db.Integer, db.ForeignKey('book.id'))
@@ -447,6 +456,42 @@ def book_comments():
 def view_user_comments():
     return render_template('user_comments.html')
 
+@app.route('/checkout')
+def checkout():
+    user_id = current_user.id
+    orders = Cart.query.filter_by(user_id=user_id).all()
+    for order in orders:
+        book_id = order.book_id
+        o = BookRatingsAndComments(userId=user_id,bookId=book_id)
+        o2 = Orders(user_id=user_id,book_id=book_id)
+        db.session.add(o)
+        db.session.add(o2)
+        db.session.delete(order)
+    db.session.commit()
+
+    return render_template('success_checkout.html',order=orders)
+
+@app.route('/orders')
+def orders():
+    user_id = current_user.id
+    orders = Orders.query.filter_by(user_id=user_id).all()
+    return render_template('orders.html',orders=orders)
+
+@app.route('/order_comment/<int:bookId>/',methods=["GET","POST"])
+def order_comment(bookId):
+    book = Book.query.filter_by(id=bookId).first()
+    if request.method == "POST":
+        comment = request.form["comment"]
+        c = BookRatingsAndComments.query.filter_by(userId=current_user.id,bookId=bookId,comments=None).first()
+        if c == None:
+            msg = "You have not purchased this book. Please buy to give feedback"
+        else:
+            c.comments = comment
+            db.session.add(c)
+            db.session.commit()
+        return redirect(url_for('index'))
+    return render_template('order_comment.html',book=book)
+
 
 @app.errorhandler(404)
 def page_not_found(e):
@@ -456,6 +501,8 @@ def page_not_found(e):
 @app.errorhandler(500)
 def server_error(e):
     return render_template('500.html'), 500
+
+
 
 
 if __name__ == '__main__':
