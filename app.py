@@ -2,6 +2,21 @@ from settings import *
 from BookRatingsAndCommentsModel import *
 from BookModel import Book
 
+from datetime import datetime
+from dateutil import tz
+
+
+def format_datetime(utc):
+    from_zone = tz.tzutc()
+    to_zone = tz.tzlocal()
+    utc = utc.replace(tzinfo=from_zone)
+    central = utc.astimezone(to_zone)
+    return central.strftime('%Y-%m-%d %I:%M %p')
+
+
+app.jinja_env.filters['datetime'] = format_datetime
+
+
 book_copies = db.Table('book_copies',
                        db.Column('user_id', db.Integer, db.ForeignKey('user.id')),
                        db.Column('book_id', db.Integer, db.ForeignKey('book.id'))
@@ -310,13 +325,26 @@ def delete_user_shipping(id):
 def book(id):
     book = Book.query.filter_by(id=id).first()
     author = Authors.query.filter_by(AuthorName=book.authorName).first()
-    comments = BookRatingsAndComments.query.filter_by(bookId=id).all()
-    return render_template('book.html', book=book, author=author, comments=comments)
+    comments = BookRatingsAndComments.query.filter_by(bookId=id).order_by(BookRatingsAndComments.createdDate.desc()).all()
 
+    users = User.query.all()
+    user_map = {}
+    for user in users:
+        user_map[user.id] = user.name
 
-def get_average_rating(id):
-    book = Book.query.filter_by(id=id).first()
-    return get_average_rating_for_book(book)
+    order_count = 0
+    if hasattr(current_user, 'id'):
+        order_count = Orders.query.filter_by(book_id=id,user_id=current_user.id).count()
+
+    has_ordered = order_count > 0
+    for comment in comments:
+        if comment.anonymous:
+            comment.userId = -1
+            comment.user = "Anonymous"
+        else:
+            comment.user = user_map[comment.userId]
+
+    return render_template('book.html', book=book, author=author, comments=comments, has_ordered=has_ordered)
 
 
 @app.route('/add_to_cart/<int:book_id>')
@@ -434,21 +462,6 @@ def author_page():
     return render_template('author.html')
 
 
-comments = []
-
-
-def store_comments(text):
-    comments.append(dict(
-        text=text,
-        user="marcos",
-        date=datetime.utcnow()
-    ))
-
-
-def new_comments(num):
-    return sorted(comments, key=lambda bm: bm['date'], reverse=True)[:num]
-
-
 @app.route('/checkout')
 def checkout():
     user_id = current_user.id
@@ -464,6 +477,7 @@ def checkout():
 
     return render_template('success_checkout.html',order=orders)
 
+
 @app.route('/orders')
 def orders():
     user_id = current_user.id
@@ -471,7 +485,7 @@ def orders():
     return render_template('orders.html',orders=orders)
 
 
-@app.route('/order_comment/<int:bookId>/',methods=["GET","POST"])
+@app.route('/order_comment/<int:bookId>/',methods=["GET", "POST"])
 def order_comment(bookId):
     book = Book.query.filter_by(id=bookId).first()
     if request.method == "POST":
@@ -484,7 +498,7 @@ def order_comment(bookId):
             db.session.add(c)
             db.session.commit()
         return redirect(url_for('index'))
-    return render_template('order_comment.html',book=book)
+    return render_template('order_comment.html', book=book)
 
 
 @app.route('/add_book_comment/<int:book_id>', methods=['POST'])

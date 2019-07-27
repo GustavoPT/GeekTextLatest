@@ -1,4 +1,10 @@
-x-star-rating {
+x-star-rating[disabled=true] {
+  font-family: 'Ionicons';
+  font-size: 24px;
+  display: inline-flex;
+}
+
+x-star-rating[disabled=false] {
   font-family: 'Ionicons';
   font-size: 48px;
   display: inline-flex;

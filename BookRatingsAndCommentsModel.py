@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from settings import db
 
 
@@ -9,16 +11,19 @@ class BookRatingsAndComments(db.Model):
     rating = db.Column(db.Integer, nullable=False)
     comments = db.Column(db.String(254), nullable=False)
     anonymous = db.Column(db.BOOLEAN, default=False, nullable=False)
+    createdDate = db.Column(db.DateTime, default=datetime.utcnow)
 
 
 def get_all_ratings_for_book(_bookId):
     return BookRatingsAndComments.query.filter_by(bookId=_bookId).first()
 
 
-def add_rating_and_comment(_userId, _bookId, _rating, _comments, _anonymous):
+def add_rating_and_comment(_userId, _bookId, _rating, _comments, _anonymous, _createdDate):
     if _anonymous == 'on':
         _anonymous = 1
-    new_rating_and_comment = BookRatingsAndComments(userId=_userId, bookId=_bookId, rating=_rating, comments=_comments, anonymous=_anonymous)
+        _userId = - 1
+    new_rating_and_comment = BookRatingsAndComments(userId=_userId, bookId=_bookId, rating=_rating, comments=_comments,
+                                                    anonymous=_anonymous, createdDate=_createdDate)
     db.session.add(new_rating_and_comment)
     db.session.commit()
 

@@ -81,23 +81,42 @@
 				<p> Publisher : {{ book.publisher }}</p>
 			</div>
 
-			<div class="row">
-				<p>Comments : </p>
-				{% if new_comments %}
-					<ul>
-						{% for comments in new_comments %}
-							<li>{{ comments.user }} added  <a>{{ comments.text }}</a></li>
-						{% endfor %}
-					</ul>
-				{% else %}
-				<p>&nbsp No comments yet.</p>
-				{% endif %}
-			</div>
+			<article class="commentSection">
+                <section>
+                    <h3 >Comments</h3>
+                </section>
+                <section>
+                    {% if comments and comments|length > 0 %}
+                        {% for comment in comments %}
+                            <section>
+                                {{ comment.createdDate|datetime }}
+                                {%  if comment.anonymous %}
+                                    <i><b><u>{{ comment.user }}</u></b></i>
+                                {% else %}
+                                    <b><u>{{ comment.user }}</u></b>
+                                {% endif %}
+                                <x-star-rating value="{{ comment.rating }}" number="5" id="rated" disabled="true"></x-star-rating>
+                            </section>
+                            <section class="actualComment">
+                            <a>{{ comment.comments }}</a>
+                            </section>
+                        {% endfor %}
+                    {% else %}
+                    <p>&nbsp No comments yet.</p>
+                    {% endif %}
+                </section>
+            </article>
 
 			<style>
 				.hidden{
 					display: none;
 				}
+                .commentSection {
+                    margin-bottom: 25px;
+                }
+                .actualComment {
+                    margin-bottom: 10px;
+                }
 			</style>
 
 			<script type="text/javascript">
@@ -115,26 +134,32 @@
 				}
 			</script>
 
-            <article>
-            <section>
-                <h3 >Add Rating</h3>
-            </section>
-            <x-star-rating value="" number="5" id="rating"></x-star-rating>
-            <script src="../static/js/StarRating.js"></script>
+            {% if current_user.id and has_ordered %}
+                <article>
+                    <section>
+                        <h3 >Add Rating</h3>
+                    </section>
+                    <x-star-rating value="" number="5" id="rating" disabled="false"></x-star-rating>
+                    <section>
+                        <h3>Add Comment</h3>
+                        <form action="{{ url_for('add_comment_to_book', user_id=current_user.id, book_id=book.id) }}" method="post">
+                            <input type="hidden" id="ratingValue" name="ratingValue" value=""/>
+                            <textarea name="comment" placeholder="Enter your comment here..." value=""></textarea>
+                            <br>
+                            <input type="checkbox" name="anonymous" id="anonymous" />
+                            <label for="chk">Submit as an anonymous user?</label>
+                            <br>
+                            <button type="submit" class="btn btn-primary">Submit</button>
+                        </form>
+                    </section>
+                </article>
+            {% endif %}
 
-            <section>
-                <h3>Add Comment</h3>
-                <form action="{{ url_for('add_comment_to_book', user_id=current_user.id, book_id=book.id) }}" method="post">
-                    <input type="hidden" id="ratingValue" name="ratingValue" value=""/>
-                    <textarea name="comment" placeholder="Enter your comment here..." value=""></textarea>
-					<br>
-					<input type="checkbox" name="anonymous" id="anonymous" />
-					<label for="chk">Submit as an anonymous user?</label>
-					<br>
-                    <button type="submit" class="btn btn-primary">Submit</button>
-                </form>
-            </section>
-        	</article>
+            {% if current_user.id and not has_ordered %}
+            Want to leave a comment and rating? You must first order the book.
+            {% endif %}
+
+        <script src="../static/js/StarRating.js"></script>
 
 		</div>
 	</div>
@@ -162,9 +187,11 @@ span.onclick = function() {
   modal.style.display = "none";
 }
 
-rating.addEventListener('rate', () => {
-    $('#ratingValue').attr('value', rating.value);
-});
+if (typeof rating !== 'undefined') {
+    rating.addEventListener('rate', () => {
+        $('#ratingValue').attr('value', rating.value);
+    });
+}
 </script>
 
 
