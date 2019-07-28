@@ -190,9 +190,9 @@ def register():
             flash("Someone already exists with that username", 'error')
             return redirect(url_for('register'))
         else:            
-            # if "@" not in email:
-            #     flash('Email must have @','error')
-            #     return redirect(url_for('user_profile'))
+            if '@' not in email:
+                flash('Email must have @ to be considered a valid email','error')
+                return redirect(url_for('register'))
             if not any(c in specialCharacters for c in password):
                 flash('Password must have atleast one special character','error')
                 return redirect(url_for('register'))
