@@ -187,10 +187,7 @@ def register():
 @app.route('/user_profile', methods=['GET', 'POST'])
 @login_required
 def user_profile():
-    print("current user in user profile function " + current_user.name)
     if current_user.is_authenticated:
-        # current_user_id = current_user.get_id()
-        # current_user = User.query.filter_by(id=current_user_id).first()
         user_shippings = current_user.user_shippings
         user_cards = current_user.user_cards
 
@@ -201,7 +198,11 @@ def user_profile():
         password = request.form['password']
         physical_address = request.form['physical_address']
         current_user.name = name
-        current_user.email = email
+        if "@" in current_user.email:
+            current_user.email = email
+        else: 
+            flash('Email must have @','error')
+            return redirect(url_for('user_profile'))
         current_user.password = password
         current_user.physical_address = physical_address
         user_db.name = name
@@ -220,6 +221,10 @@ def add_user_card():
     if request.method == 'POST':
         user_id = current_user.id
         credit_card_num = request.form['CreditCardNum']
+        if len(credit_card_num) is not 16 or credit_card_num.isdigit():
+            print("we are in here")
+            flash('Card number must be equal to 16 and must be all numbers')
+            return redirect(url_for('user_profile'))
         expMonth = request.form['ExpMonth']
         expYear = request.form['ExpYear']
         cvs = request.form['CVS']
@@ -242,6 +247,7 @@ def add_user_shipping():
         ShippingCity = request.form['ShippingCity']
         ShippingState = request.form['ShippingState']
         ShippingZip = request.form['ShippingZip']
+
         new_user_shipping = UserShipping(UserID=UserID, ShippingAddr=ShippingAddr, ShippingCity=ShippingCity,
                                          ShippingState=ShippingState, ShippingZip=ShippingZip)
         db.session.add(new_user_shipping)
@@ -258,6 +264,10 @@ def edit_user_card(id):
     if request.method == 'POST':
         user_card.UserID = current_user.id
         user_card.CreditCardNum = request.form['CreditCardNum']
+        if len(request.form['CreditCardNum']) is not 16 or request.form['CreditCardNum'].isdigit():
+            print("we are in here")
+            flash('Card number must be equal to 16 and must be all numbers')
+            return redirect(url_for('user_profile'))
         user_card.ExpMonth = request.form['ExpMonth']
         user_card.ExpYear = request.form['ExpYear']
         user_card.CVS = request.form['CVS']
