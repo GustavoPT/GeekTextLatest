@@ -1,0 +1,9 @@
+pip install flask_paginate 
+
+from app import db 
+from BookModel import Book 
+from BookRatingsAndCommentsModel import BookRatingsAndComments 
+db.create_all() 
+
+run bookinsert.sql 
+run cardshippinginsert.sql 

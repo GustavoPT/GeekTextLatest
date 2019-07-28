@@ -22,6 +22,10 @@
                                     <br>
                                     <input name="password" class="form-control" type="text" value="{{current_user.password}}">
                                     <br>
+                                    <label for="nickname">Nickname:</label>
+                                    <br>
+                                    <input name="nickname" type="text" class="form-control" value="{{current_user.nickname}}">
+                                    <br>
                                     <label for="physical_address" class="">Physical Address</label>
                                     <br>
                                     <input name="physical_address" class="form-control" type="text" placeholder="{{current_user.physical_address}}">
@@ -36,7 +40,7 @@
 
             <br>
             <h1 style="">Shipping Addresses</h1>
-            <button class="btn btn-outline-info" ><a href="/add_user_shipping">Add Shipping address</a></button>
+            <button class="btn btn-outline-info" ><a href="{{ url_for('add_user_shipping')}}">Add Shipping address</a></button>
             <br>
             <br>
 
@@ -106,7 +110,7 @@
  
             <br>
             <br>
-            <button class="btn btn-outline-info"><a class="btn" href="/add_user_card">Add Card</a></button>
+            <button class="btn btn-outline-info"><a class="btn" href="{{url_for('add_user_card')}}">Add Card</a></button>
             
     </form>
 {% endblock %}

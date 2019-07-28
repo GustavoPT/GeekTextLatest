@@ -60,11 +60,11 @@ class User(db.Model, UserMixin):
     name = db.Column(db.String(128))
     email = db.Column(db.String(128))
     password = db.Column(db.String(128))
+    nickname = db.Column(db.String(128))
     books = db.relationship('Book', secondary=book_copies, backref=db.backref('users', lazy='dynamic'))
     user_cards = db.relationship('UserCard', backref='user')
     user_shippings = db.relationship('UserShipping', backref='user')
-
-    # physical_address = db.Column(db.String(128))
+    physical_address = db.Column(db.String(128))
 
     def __str__(self):
         return self.name
@@ -236,6 +236,7 @@ def user_profile():
         email = request.form['email']
         password = request.form['password']
         physical_address = request.form['physical_address']
+        nickname = request.form['nickname']
         current_user.name = name
         if "@" in email:
             current_user.email = email
@@ -250,10 +251,12 @@ def user_profile():
             return redirect(url_for('user_profile'))
         current_user.password = password
         current_user.physical_address = physical_address
+        current_user.nickname = nickname 
         user_db.name = name
         user_db.email = email
         user_db.password = password
         user_db.physical_address = physical_address
+        user_db.nickname = nickname 
         db.session.commit()
         flash('successfully updated', 'success')
         return redirect(url_for('user_profile'))
@@ -266,9 +269,9 @@ def add_user_card():
     if request.method == 'POST':
         user_id = current_user.id
         credit_card_num = request.form['CreditCardNum']
-        if len(credit_card_num) is not 16 or credit_card_num.isdigit():
+        if len(credit_card_num) is not 16 or not credit_card_num.isdigit():
             print("we are in here")
-            flash('Card number must be equal to 16 and must be all numbers')
+            flash('Card number must be equal to 16 and must be all numbers','error')
             return redirect(url_for('user_profile'))
         expMonth = request.form['ExpMonth']
         expYear = request.form['ExpYear']
@@ -287,7 +290,7 @@ def add_user_card():
 @app.route('/add_user_shipping', methods=['GET', 'POST'])
 def add_user_shipping():
     if request.method == 'POST':
-        UserID = 1
+        UserID = current_user.id
         ShippingAddr = request.form['ShippingAddr']
         ShippingCity = request.form['ShippingCity']
         ShippingState = request.form['ShippingState']
