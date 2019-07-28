@@ -237,7 +237,7 @@ def user_profile():
         password = request.form['password']
         physical_address = request.form['physical_address']
         current_user.name = name
-        if "@" in current_user.email:
+        if "@" in email:
             current_user.email = email
         else: 
             flash('Email must have @','error')
