@@ -1,3 +1,16 @@
+
+
+INSERT INTO `geek_text`.`user`
+(`id`,
+`name`,
+`email`,
+`password`)
+VALUES
+(1,
+'testuser',
+'testuser@email',
+'testuserpassword');
+
 INSERT INTO `geek_text`.`user_card`
 (`UserID`,
 `CreditCardNum`,
@@ -70,15 +83,3 @@ VALUES
 "another city2",
 "FL",
 "33141");
-
-INSERT INTO `geek_text`.`user`
-('id',
-`name`,
-`email`,
-`password`)
-VALUES
-(1,
-'testuser',
-'testuser@email',
-'testuserpassword');
-
