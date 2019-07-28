@@ -242,6 +242,12 @@ def user_profile():
         else: 
             flash('Email must have @','error')
             return redirect(url_for('user_profile'))
+        if len(password) < 4:
+            flash("Password must be of length greater than 4",'error')
+            return redirect(url_for('user_profile'))
+        if not any(c in specialCharacters for c in password):
+            flash('Password must have atleast one special character','error')
+            return redirect(url_for('user_profile'))
         current_user.password = password
         current_user.physical_address = physical_address
         user_db.name = name
