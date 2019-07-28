@@ -14,10 +14,6 @@ class BookRatingsAndComments(db.Model):
     createdDate = db.Column(db.DateTime, default=datetime.utcnow)
 
 
-def get_all_ratings_for_book(_bookId):
-    return BookRatingsAndComments.query.filter_by(bookId=_bookId).first()
-
-
 def add_rating_and_comment(_userId, _bookId, _rating, _comments, _anonymous):
     if _anonymous == 'on':
         _anonymous = 1
@@ -26,16 +22,3 @@ def add_rating_and_comment(_userId, _bookId, _rating, _comments, _anonymous):
                                                     anonymous=_anonymous)
     db.session.add(new_rating_and_comment)
     db.session.commit()
-
-
-def get_average_rating_for_book(_bookId):
-    totalRating = 0
-    comments = BookRatingsAndComments.query.filter_by(bookId=_bookId).all()
-    for comment in comments:
-        totalRating = comment.rating
-    return totalRating
-
-
-
-
-
