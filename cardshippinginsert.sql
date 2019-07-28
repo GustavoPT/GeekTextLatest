@@ -72,12 +72,12 @@ VALUES
 "33141");
 
 INSERT INTO `geek_text`.`user`
-(
+('id',
 `name`,
 `email`,
 `password`)
 VALUES
-(
+(1,
 'testuser',
 'testuser@email',
 'testuserpassword');
