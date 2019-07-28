@@ -8,8 +8,11 @@
         <!-- Bootstrap core CSS -->
         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
         <link rel="stylesheet" href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.min.css">
+        <link rel="stylesheet" href="/static/css/StarRating.css">
+        <link rel="stylesheet" href="//code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
 
         <link rel="stylesheet" href="{{url_for('static',filename='style.css')}}">
+        <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
 
     </head>
     <body>
@@ -44,9 +47,9 @@
                                Hi Guest
                             {% endif %}                       -->
                             {% if current_user.is_authenticated %}
-                              Hii {{current_user}}
+                              Hi {{current_user}}
                             {% else %}
-                              Hii Guest
+                              Hi Guest
                             {% endif %}
                           </a></button>
                         <!--Menu-->
