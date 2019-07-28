@@ -130,6 +130,8 @@ class Orders(db.Model):
         book = Book.query.get(self.book_id)
         return f"{book.title}"
 
+        
+specialCharacters = ['$', '#', '@', '!', '*','%','^','&']
 
 @app.route('/', methods=['GET', 'POST'])
 def real_index():
@@ -178,6 +180,7 @@ def register():
         username = request.form['username']
         password = request.form['password']
         email = request.form['email']
+        confirm = request.form['confirm']
         # check if a user already exists
         #  with that username
         exists = db.session.query(User.id).filter_by(name=username).scalar() is not None
@@ -186,7 +189,22 @@ def register():
             # session flash that someone already exists with that username
             flash("Someone already exists with that username", 'error')
             return redirect(url_for('register'))
-        else:
+        else:            
+            # if "@" not in email:
+            #     flash('Email must have @','error')
+            #     return redirect(url_for('user_profile'))
+            if not any(c in specialCharacters for c in password):
+                flash('Password must have atleast one special character','error')
+                return redirect(url_for('register'))
+            if len(password) < 4:
+                flash("Password must be of length greater than 4",'error')
+                return redirect(url_for('register'))
+            if not (password == confirm):
+                print("we are here")
+                print(password)
+                print(confirm)
+                flash("Password must be the same as confirm password",'error')
+                return redirect(url_for('register'))
             # create a new user with that password and username
             # and email
             new_user = User(name=username, password=password, email=email)
