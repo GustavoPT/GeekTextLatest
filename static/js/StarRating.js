@@ -8,6 +8,14 @@ class StarRating extends HTMLElement {
         this.highlight(this.value - 1);
     }
 
+    get disabled () {
+        return this.getAttribute('disabled') || 'false';
+    }
+
+    set disabled(val){
+        this.setAttribute('disabled', val);
+    }
+
     get number() {
         return this.getAttribute('number') || 5;
     }
@@ -42,26 +50,28 @@ class StarRating extends HTMLElement {
 
         this.number = this.number;
 
-        this.addEventListener('mousemove', e => {
-            let box = this.getBoundingClientRect(),
-                starIndex = Math.floor((e.pageX - box.left) / box.width * this.stars.length);
+        if(this.disabled === 'false') {
+            this.addEventListener('mousemove', e => {
+                let box = this.getBoundingClientRect(),
+                    starIndex = Math.floor((e.pageX - box.left) / box.width * this.stars.length);
 
-            this.highlight(starIndex);
-        });
+                this.highlight(starIndex);
+            });
 
-        this.addEventListener('mouseout', () => {
-            this.value = this.value;
-        });
+            this.addEventListener('mouseout', () => {
+                this.value = this.value;
+            });
 
-        this.addEventListener('click', e => {
-           let box = this.getBoundingClientRect(),
-                starIndex = Math.floor((e.pageX - box.left) / box.width * this.stars.length);
+            this.addEventListener('click', e => {
+                let box = this.getBoundingClientRect(),
+                    starIndex = Math.floor((e.pageX - box.left) / box.width * this.stars.length);
 
-           this.value = starIndex + 1;
+                this.value = starIndex + 1;
 
-           let rateEvent = new Event('rate');
-           this.dispatchEvent(rateEvent);
-        });
+                let rateEvent = new Event('rate');
+                this.dispatchEvent(rateEvent);
+            });
+        }
     }
 }
 
