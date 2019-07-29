@@ -312,14 +312,15 @@ def edit_user_card(id):
     if request.method == 'POST':
         user_card.UserID = current_user.id
         user_card.CreditCardNum = request.form['CreditCardNum']
-        if len(request.form['CreditCardNum']) is not 16 or request.form['CreditCardNum'].isdigit():
+        if len(request.form['CreditCardNum']) is not 16 or not request.form['CreditCardNum'].isdigit():
             print("we are in here")
-            flash('Card number must be equal to 16 and must be all numbers')
+            flash('Card number must be equal to 16 and must be all numbers','error')
             return redirect(url_for('user_profile'))
         user_card.ExpMonth = request.form['ExpMonth']
         user_card.ExpYear = request.form['ExpYear']
         user_card.CVS = request.form['CVS']
         user_card.NameOnCard = request.form['NameOnCard']
+        print(request.form['NameOnCard'])
         db.session.commit()
         flash('Edited Card successfully', 'success')
         return redirect(url_for('user_profile'))
@@ -344,7 +345,9 @@ def edit_user_shipping(id):
 
 @app.route('/user_profile/delete_user_card/<int:id>', methods=['GET', 'POST'])
 def delete_user_card(id):
+    print("card id " + str(id))
     user_card = UserCard.query.filter_by(id=id).first()
+    print(user_card)
     db.session.delete(user_card)
     db.session.commit()
     flash('Successfully deleted', 'success')
@@ -353,7 +356,6 @@ def delete_user_card(id):
 
 @app.route('/user_profile/delete_user_shipping/<int:id>', methods=['GET', 'POST'])
 def delete_user_shipping(id):
-    print(id)
     user_shipping = UserShipping.query.filter_by(id=id).first()
     print(user_shipping)
     db.session.delete(user_shipping)
